@@ -1,0 +1,26 @@
+{
+  "name": "constructCrawler",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^1.4.0",
+    "jszip": "^3.10.1",
+    "pinia": "^2.1.4",
+    "primeflex": "^3.3.1",
+    "primevue": "^3.30.2",
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.4"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.4.0",
+    "@vitejs/plugin-vue": "^4.2.3",
+    "vite": "^4.4.4"
+  }
+}
