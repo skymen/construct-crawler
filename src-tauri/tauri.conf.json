@@ -7,7 +7,7 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "constructCrawler",
+    "productName": "construct_crawler",
     "version": "0.0.1"
   },
   "tauri": {
