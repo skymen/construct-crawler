@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.4.0",
+    "jimp": "^0.22.8",
     "jszip": "^3.10.1",
     "pinia": "^2.1.4",
     "primeflex": "^3.3.1",

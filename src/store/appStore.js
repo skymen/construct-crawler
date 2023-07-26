@@ -51,6 +51,9 @@ export const useAppStore = defineStore("app", {
           } else {
             this.logError("No c3proj file found in the selected folder.");
           }
+        } else {
+          this.loading = false;
+          this.projectOpened = false;
         }
       } catch (error) {
         this.loading = false;
@@ -125,6 +128,9 @@ export const useAppStore = defineStore("app", {
           } else {
             this.logError("No c3p file selected.");
           }
+        } else {
+          this.loading = false;
+          this.projectOpened = false;
         }
       } catch (error) {
         this.loading = false;
@@ -170,9 +176,11 @@ export const useAppStore = defineStore("app", {
         // if it exists, add the properties to info
 
         if (await fs.exists(src)) {
-          const json = JSON.parse(await fs.readFile(src));
+          const untouchedJson = await fs.readFile(src);
+          const json = JSON.parse(untouchedJson);
 
           info.properties = json;
+          info.originalJson = untouchedJson;
 
           if (info.properties.animations) {
             // get all image paths in here
@@ -271,8 +279,8 @@ export const useAppStore = defineStore("app", {
       };
 
       this.projectOpened = true;
-      this.loading = false;
       await router.push({ path: "/project/home" });
+      this.loading = false;
     },
 
     logError(error) {

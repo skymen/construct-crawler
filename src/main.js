@@ -14,6 +14,8 @@ import Toolbar from "primevue/toolbar";
 import InputText from "primevue/inputtext";
 import Menu from "primevue/menu";
 import ProgressSpinner from "primevue/progressspinner";
+import Dropdown from "primevue/dropdown";
+import Checkbox from "primevue/checkbox";
 
 const pinia = createPinia();
 const app = createApp(App);
@@ -30,5 +32,7 @@ app.component("Toolbar", Toolbar);
 app.component("InputText", InputText);
 app.component("Menu", Menu);
 app.component("ProgressSpinner", ProgressSpinner);
+app.component("Dropdown", Dropdown);
+app.component("Checkbox", Checkbox);
 
 app.mount("#app");
