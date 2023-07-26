@@ -7,6 +7,10 @@ https://github.com/skymen/construct-crawler/releases/latest
 Note that opening a project as a c3p file does not apply the changes to the c3p.
 To actually apply the changes, you need to save the project as a project folder before opening it.
 
+## Important
+
+Changes made by this app cannot be undone. Make sure to back up your project before using this app.
+
 # Contributing
 
 This project uses Tauri + Vue 3 + Vite. It is recommended to be somewhat familiar with these technologies before contributing.
