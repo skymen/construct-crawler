@@ -4,9 +4,14 @@ import { useRouter, useRoute } from "vue-router";
 import LocalImage from "../components/LocalImage.vue";
 import { ref, computed } from "vue";
 import actions from "../libraries/jimp/actions";
-import { getImageSize } from "../libraries/jimp/utils/sizeUtils";
+import {
+  getImageSize,
+  getImageBitmap,
+  getImageSizeRust,
+} from "../libraries/jimp/utils/sizeUtils";
 import { applyAction } from "../libraries/jimp/utils/applyAction";
 import { getCurrentInstance } from "vue";
+import { clearUrlMap } from "../libraries/jimp/utils/urlFromFile";
 
 const router = useRouter();
 
@@ -100,7 +105,7 @@ async function openActionDialog() {
             objectType.properties &&
             objectType.properties.animations
           ) {
-            imgBitmap = await getImageSize(
+            imgBitmap = await getImageSizeRust(
               animations.value[selectedAnimation.value].frames[
                 selectedFrame.value
               ].src
@@ -123,6 +128,11 @@ async function openActionDialog() {
               value: i,
             };
           });
+        } else if (param.type === "number") {
+          ret.value = 0;
+          if (param.value) {
+            ret.value = param.value;
+          }
         }
 
         return ret;
@@ -138,17 +148,21 @@ async function openActionDialog() {
 const instance = getCurrentInstance();
 async function executeAction() {
   loadingAction.value = true;
-  await applyAction(
+  const paths = await applyAction(
     selectedAction.value.function,
-    params.value,
+    JSON.parse(JSON.stringify(params.value)),
     applyTo.value,
     objectType,
     selectedAnimation.value,
     selectedFrame.value
   );
-  instance?.proxy?.$forceUpdate();
+  clearUrlMap(paths);
   loadingAction.value = false;
   visible.value = false;
+}
+
+function onSelect(event, param) {
+  param.value = event.files;
 }
 </script>
 
@@ -285,12 +299,29 @@ async function executeAction() {
           </div>
         </div>
       </div>
-      <div v-if="param.type === 'combo'" class="flex flex-column">
+      <div v-else-if="param.type === 'combo'" class="flex flex-column">
         <Dropdown
           v-model="param.value"
           :options="param.options"
           optionLabel="label"
           optionValue="value"
+        />
+      </div>
+      <div v-else-if="param.type === 'number'" class="flex flex-column">
+        <InputNumber v-model="param.value" inputId="integeronly" />
+      </div>
+      <div v-else-if="param.type === 'file'" class="flex flex-column">
+        <FileUpload
+          :mode="param.options.advanced ? 'advanced' : 'basic'"
+          :accept="param.options.accept"
+          :multiple="param.options.multiple"
+          :invalidFileTypeMessage="param.options.invalidFileTypeMessage"
+          :fileLimit="param.options.fileLimit"
+          :chooseLabel="param.options.label"
+          @select="onSelect($event, param)"
+          @remove="onSelect($event, param)"
+          :showUploadButton="false"
+          :showCancelButton="false"
         />
       </div>
     </div>
@@ -456,4 +487,8 @@ async function executeAction() {
   </div>
 </template>
 
-<style scoped></style>
+<style>
+.p-fileupload-file-badge {
+  display: none !important;
+}
+</style>

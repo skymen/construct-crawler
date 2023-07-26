@@ -10,6 +10,13 @@ export async function applyAction(
   selectedAnim,
   selectedFrame
 ) {
+  const pathsToClear = [];
+
+  const preSaveImgToPath = async (img, path) => {
+    pathsToClear.push(path);
+    await saveImgToPath(img, path);
+  };
+
   params = params.map((param) => {
     if (param.type === "size") {
       param.value = properSizeFormat(param.value);
@@ -45,7 +52,7 @@ export async function applyAction(
     let img = await action(objectType.properties.image, ...params);
     objectProperties.image.width = img.bitmap.width;
     objectProperties.image.height = img.bitmap.height;
-    await saveImgToPath(img, objectType.properties.image.src);
+    await preSaveImgToPath(img, objectType.properties.image.src);
   } else if (applyTo === 0) {
     // Current frame
     let img = await action(
@@ -54,7 +61,7 @@ export async function applyAction(
     );
     anims[selectedAnim].origin.frames[selectedFrame].width = img.bitmap.width;
     anims[selectedAnim].origin.frames[selectedFrame].height = img.bitmap.height;
-    await saveImgToPath(img, anims[selectedAnim].frames[selectedFrame].src);
+    await preSaveImgToPath(img, anims[selectedAnim].frames[selectedFrame].src);
   } else if (applyTo === 1) {
     // Current animation
     const frames = anims[selectedAnim].frames;
@@ -62,7 +69,7 @@ export async function applyAction(
       let img = await action(frames[i].src, ...params);
       anims[selectedAnim].origin.frames[i].width = img.bitmap.width;
       anims[selectedAnim].origin.frames[i].height = img.bitmap.height;
-      await saveImgToPath(img, frames[i].src);
+      await preSaveImgToPath(img, frames[i].src);
     }
   } else {
     // All animations
@@ -72,7 +79,7 @@ export async function applyAction(
         let img = await action(frames[j].src, ...params);
         anims[i].origin.frames[j].width = img.bitmap.width;
         anims[i].origin.frames[j].height = img.bitmap.height;
-        await saveImgToPath(img, frames[j].src);
+        await preSaveImgToPath(img, frames[j].src);
       }
     }
   }
@@ -81,4 +88,6 @@ export async function applyAction(
     objectPropertiesPath,
     JSON.stringify(objectProperties, null, 2)
   );
+
+  return pathsToClear;
 }

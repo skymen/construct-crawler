@@ -16,6 +16,8 @@ import Menu from "primevue/menu";
 import ProgressSpinner from "primevue/progressspinner";
 import Dropdown from "primevue/dropdown";
 import Checkbox from "primevue/checkbox";
+import InputNumber from "primevue/inputnumber";
+import FileUpload from "primevue/fileupload";
 
 const pinia = createPinia();
 const app = createApp(App);
@@ -34,5 +36,7 @@ app.component("Menu", Menu);
 app.component("ProgressSpinner", ProgressSpinner);
 app.component("Dropdown", Dropdown);
 app.component("Checkbox", Checkbox);
+app.component("InputNumber", InputNumber);
+app.component("FileUpload", FileUpload);
 
 app.mount("#app");

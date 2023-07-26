@@ -1,5 +1,7 @@
 <script setup>
-import urlFromFile from "../libraries/jimp/utils/urlFromFile";
+import urlFromFile, {
+  subscribeToPath,
+} from "../libraries/jimp/utils/urlFromFile";
 import { ref, watch, toRef } from "vue";
 const props = defineProps({
   src: String,
@@ -15,28 +17,33 @@ const props = defineProps({
 });
 
 const imageUrl = ref(null);
+const loading = ref(false);
 
 const src = toRef(props, "src");
 
-// watch src prop
-watch(
-  src,
-  (newSrc) => {
-    if (newSrc === null) {
-      imageUrl.value = null;
-      return;
-    }
-    urlFromFile(newSrc).then((url) => {
-      imageUrl.value = url;
+function updateImageUrl() {
+  if (src.value === null) {
+    imageUrl.value = null;
+    loading.value = false;
+    return;
+  }
+  loading.value = true;
+  urlFromFile(src.value).then((url) => {
+    imageUrl.value = url;
+    loading.value = false;
+    subscribeToPath(src.value, () => {
+      updateImageUrl();
     });
-  },
-  { immediate: true }
-);
+  });
+}
+
+// watch src prop
+watch(src, updateImageUrl, { immediate: true });
 </script>
 
 <template>
   <img
-    v-if="imageUrl !== null"
+    v-if="imageUrl !== null && !loading"
     :src="imageUrl"
     :alt="alt"
     :width="width"
@@ -44,9 +51,17 @@ watch(
     style="object-fit: contain; max-width: 90%; max-height: 90%"
   />
   <div
-    v-else
+    v-else-if="loading"
     :style="`width: ${width}; height: ${height}; max-width: 90%; max-height: 90%`"
   >
     <ProgressSpinner />
   </div>
+  <img
+    v-else
+    src="failedToLoadImage.png"
+    :alt="alt"
+    :width="width"
+    :height="height"
+    style="object-fit: contain; max-width: 90%; max-height: 90%"
+  />
 </template>

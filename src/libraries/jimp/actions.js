@@ -1,4 +1,8 @@
 import resize from "./utils/resize";
+import blur from "./utils/fastBlur";
+import gaussian from "./utils/gaussian";
+import alphaThreshold from "./utils/alphaThreshold";
+import replaceImage from "./utils/replaceImage";
 
 export default [
   {
@@ -23,6 +27,76 @@ export default [
         type: "combo",
         options: ["nearest", "bilinear", "bicubic", "hermite", "bezier"],
         description: "Algorithm to use for smoothing.",
+      },
+    ],
+  },
+  {
+    name: "Fast Blur",
+    function: blur,
+    description:
+      "Applies a quick blur to the image, similar to gaussian blur but much faster.",
+    params: [
+      {
+        name: "Radius",
+        type: "number",
+        description: "The radius of the blur.",
+      },
+    ],
+  },
+  {
+    name: "Gaussian Blur",
+    function: gaussian,
+    description:
+      "Applies a gaussian blur to the image. WARNING: It's very slow.",
+    params: [
+      {
+        name: "Radius",
+        type: "number",
+        description: "The radius of the blur.",
+      },
+    ],
+  },
+  {
+    name: "Alpha Threshold",
+    function: alphaThreshold,
+    description: "Applies an alpha threshold to the image.",
+    params: [
+      {
+        name: "Threshold",
+        type: "number",
+        description: "The threshold to apply.",
+        value: 128,
+      },
+      {
+        name: "Min",
+        type: "number",
+        description: "The minimum alpha value.",
+      },
+      {
+        name: "Max",
+        type: "number",
+        description: "The maximum alpha value.",
+        value: 255,
+      },
+    ],
+  },
+  {
+    name: "Replace Image",
+    function: replaceImage,
+    description: "Replaces the image with another image.",
+    params: [
+      {
+        name: "Image",
+        type: "file",
+        options: {
+          multiple: false,
+          accept: "image/*",
+          invalidFileTypeMessage: "Only images are allowed.",
+          fileLimit: 1,
+          label: "Select an image",
+          advanced: true,
+        },
+        description: "The image to replace with.",
       },
     ],
   },

@@ -1,6 +1,8 @@
 import * as _Jimp from "jimp/browser/lib/jimp.js";
 const Jimp = typeof self !== "undefined" ? self.Jimp || _Jimp : _Jimp;
 import urlFromFile from "./urlFromFile";
+import fs from "../../tauriFsProvider.js";
+import { invoke } from "@tauri-apps/api/tauri";
 
 export function properSizeFormat(sizeParam) {
   const size = { width: sizeParam.width, height: sizeParam.height };
@@ -45,7 +47,31 @@ export function getSize(sizeParam, img) {
   return size;
 }
 
-export async function getImageSize(imagePath) {
+export async function getImageBitmap(imagePath) {
   const img = await Jimp.read(await urlFromFile(imagePath));
   return img.bitmap;
+}
+
+export async function getImageSize(imagePath) {
+  try {
+    const bytes = await fs.readBinaryFile(imagePath);
+    // The width and height are stored in bytes 16-20 and 20-24 of the PNG file
+    const width = new DataView(bytes.buffer).getUint32(16);
+    const height = new DataView(bytes.buffer).getUint32(20);
+
+    return { width, height };
+  } catch (error) {
+    console.error("Error reading file stats:", error);
+  }
+}
+
+export async function getImageSizeRust(imagePath) {
+  try {
+    const res = await invoke("read_png_dimensions", {
+      filePath: imagePath,
+    });
+    return { width: res[0], height: res[1] };
+  } catch (error) {
+    console.error("Error reading file stats:", error);
+  }
 }
