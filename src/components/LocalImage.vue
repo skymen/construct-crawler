@@ -58,7 +58,7 @@ watch(src, updateImageUrl, { immediate: true });
   </div>
   <img
     v-else
-    src="failedToLoadImage.png"
+    src="/failedToLoadImage.png"
     :alt="alt"
     :width="width"
     :height="height"
