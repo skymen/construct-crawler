@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     outputs:
-      releaseId: ${{ steps.tauri.outputs.releaseId }}
+      releaseId: ${{ steps.tauri.outputs.releaseHtmlUrl }}
     steps:
       - uses: actions/checkout@v3
       - name: setup node
@@ -72,7 +72,9 @@ jobs:
           RELEASE_ID: ${{needs.publishtauri.outputs.releaseId}}
         run: |
           echo "$RELEASE_ID"
-          curl -o latest.json "https://github.com/skymen/construct-crawler/releases/download/$RELEASE_ID/latest.json"
+          RELEASE_TAG=$(basename $RELEASE_ID)
+          echo "$RELEASE_TAG"
+          curl -o latest.json "https://github.com/skymen/construct-crawler/releases/download/$RELEASE_TAG/latest.json"
       - name: Commit and push changes
         run: |
           git add latest.json
