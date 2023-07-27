@@ -139,15 +139,50 @@ async function openActionDialog() {
       })
     )),
   ];
-
   applyTo.value = 0;
-
   visible.value = true;
+  loadComboSelections();
 }
 
-const instance = getCurrentInstance();
+function saveComboSelections() {
+  params.value.forEach((param, i) => {
+    if (param.type === "combo") {
+      let key = `${selectedAction.value.name}/${param.name}-${i}`;
+      localStorage.setItem(key, param.value);
+    }
+  });
+
+  localStorage.setItem(`${selectedAction.value.name}/applyTo`, applyTo.value);
+}
+
+function loadComboSelections() {
+  params.value.forEach((param, i) => {
+    if (param.type === "combo") {
+      let key = `${selectedAction.value.name}/${param.name}-${i}`;
+      let value = localStorage.getItem(key);
+      if (value) {
+        value = parseInt(value);
+        if (value >= 0 && value < param.options.length) {
+          param.value = value;
+        }
+      }
+    }
+  });
+
+  let applyToValue = localStorage.getItem(
+    `${selectedAction.value.name}/applyTo`
+  );
+  if (applyToValue) {
+    applyToValue = parseInt(applyToValue);
+    if (applyToValue >= 0 && applyToValue < applyToOptions.length) {
+      applyTo.value = applyToValue;
+    }
+  }
+}
+
 async function executeAction() {
   loadingAction.value = true;
+  saveComboSelections();
   const paths = await applyAction(
     selectedAction.value.function,
     JSON.parse(JSON.stringify(params.value)),
@@ -167,189 +202,6 @@ function onSelect(event, param) {
 </script>
 
 <template>
-  <Dialog
-    v-model:visible="visible"
-    modal
-    :draggable="false"
-    position="top"
-    style="
-      max-width: 70vw;
-      width: 800px;
-      background: #2a323d;
-      border: 1px solid #3f4b5b;
-      border-radius: 4px;
-    "
-  >
-    <template #header>
-      <div class="flex flex-column">
-        <h3 style="margin: 0">{{ selectedAction.name }}</h3>
-        <p
-          style="
-            margin-top: 5px;
-            margin-bottom: 0px;
-            font-size: small;
-            font-style: italic;
-          "
-        >
-          {{ selectedAction.description }}
-        </p>
-      </div>
-    </template>
-    <div
-      v-for="(param, i) of params"
-      :key="param.name"
-      :style="`border: 1px solid #ddd;
-        border-radius: 3px;
-        padding: 10px;
-        ${i !== 0 ? 'margin-top: 17px;' : 'margin-top: 3px;'}`"
-    >
-      <div
-        style="
-          transform: translateY(-22.5px);
-          margin-bottom: -22.5px;
-          background: #2a323d;
-          padding: 0 5px;
-          width: fit-content;
-        "
-      >
-        {{ param.name }}
-      </div>
-      <p
-        style="
-          margin-top: 5px;
-          margin-bottom: 10px;
-          font-size: small;
-          font-style: italic;
-        "
-      >
-        {{ param.description }}
-      </p>
-      <div v-if="param.type === 'size'" class="flex flex-column">
-        <div class="flex flex-row">
-          <span class="flex align-items-center">
-            <div for="height" style="margin-right: 5px; width: 50px !important">
-              Width:
-            </div>
-            <InputText
-              id="width"
-              v-model="param.value.width"
-              :disabled="param.value.autoWidth"
-            />
-          </span>
-          <div
-            class=""
-            style="
-              background: #ddd;
-              width: 1px;
-              margin-left: 6px;
-              margin-right: 5px;
-              opacity: 0.4;
-            "
-          ></div>
-          <div class="flex align-items-center" style="">
-            <Checkbox
-              v-model="param.value.autoWidth"
-              :disabled="param.value.autoHeight"
-              inputId="autoWidth"
-              :binary="true"
-            />
-            <label for="autoWidth" class="ml-2"> Auto </label>
-          </div>
-        </div>
-        <div
-          class="w-full"
-          style="
-            background: #ddd;
-            height: 1px;
-            margin-top: 6px;
-            margin-bottom: 5px;
-            opacity: 0.4;
-          "
-        ></div>
-        <div class="flex flex-row">
-          <span class="flex align-items-center">
-            <div for="height" style="margin-right: 5px; width: 50px !important">
-              Height:
-            </div>
-            <InputText
-              id="height"
-              v-model="param.value.height"
-              :disabled="param.value.autoHeight"
-            />
-          </span>
-
-          <div
-            class=""
-            style="
-              background: #ddd;
-              width: 1px;
-              margin-left: 6px;
-              margin-right: 5px;
-              opacity: 0.4;
-            "
-          ></div>
-          <div class="flex align-items-center">
-            <Checkbox
-              v-model="param.value.autoHeight"
-              :disabled="param.value.autoWidth"
-              inputId="autoHeight"
-              :binary="true"
-            />
-            <label for="autoHeight" class="ml-2"> Auto </label>
-          </div>
-        </div>
-      </div>
-      <div v-else-if="param.type === 'combo'" class="flex flex-column">
-        <Dropdown
-          v-model="param.value"
-          :options="param.options"
-          optionLabel="label"
-          optionValue="value"
-        />
-      </div>
-      <div v-else-if="param.type === 'number'" class="flex flex-column">
-        <InputNumber v-model="param.value" inputId="integeronly" />
-      </div>
-      <div v-else-if="param.type === 'file'" class="flex flex-column">
-        <FileUpload
-          :mode="param.options.advanced ? 'advanced' : 'basic'"
-          :accept="param.options.accept"
-          :multiple="param.options.multiple"
-          :invalidFileTypeMessage="param.options.invalidFileTypeMessage"
-          :fileLimit="param.options.fileLimit"
-          :chooseLabel="param.options.label"
-          @select="onSelect($event, param)"
-          @remove="onSelect($event, param)"
-          :showUploadButton="false"
-          :showCancelButton="false"
-        />
-      </div>
-    </div>
-
-    <div
-      v-if="objectType.properties && objectType.properties.animations"
-      style="margin-top: 20px"
-    >
-      Apply to:
-      <Dropdown
-        v-model="applyTo"
-        :options="applyToOptions"
-        optionLabel="label"
-        optionValue="value"
-      />
-    </div>
-
-    <template #footer>
-      <Button label="Cancel" icon="pi pi-times" @click="visible = false" text />
-      <Button
-        label="Execute"
-        icon="pi pi-check"
-        @click="executeAction"
-        :loading="loadingAction"
-        autofocus
-      />
-    </template>
-  </Dialog>
   <div class="flex w-full h-full flex-column">
     <div
       class="flex w-full align-items-center justify-content-center"
@@ -364,6 +216,200 @@ function onSelect(event, param) {
         (objectType.properties.image || objectType.properties.animations)
       "
     >
+      <Dialog
+        v-model:visible="visible"
+        modal
+        :draggable="false"
+        position="top"
+        style="
+          max-width: 70vw;
+          width: 800px;
+          background: #2a323d;
+          border: 1px solid #3f4b5b;
+          border-radius: 4px;
+        "
+      >
+        <template #header>
+          <div class="flex flex-column">
+            <h3 style="margin: 0">{{ selectedAction.name }}</h3>
+            <p
+              style="
+                margin-top: 5px;
+                margin-bottom: 0px;
+                font-size: small;
+                font-style: italic;
+              "
+            >
+              {{ selectedAction.description }}
+            </p>
+          </div>
+        </template>
+        <div
+          v-for="(param, i) of params"
+          :key="param.name"
+          :style="`border: 1px solid #ddd;
+        border-radius: 3px;
+        padding: 10px;
+        ${i !== 0 ? 'margin-top: 17px;' : 'margin-top: 3px;'}`"
+        >
+          <div
+            style="
+              transform: translateY(-22.5px);
+              margin-bottom: -22.5px;
+              background: #2a323d;
+              padding: 0 5px;
+              width: fit-content;
+            "
+          >
+            {{ param.name }}
+          </div>
+          <p
+            style="
+              margin-top: 5px;
+              margin-bottom: 10px;
+              font-size: small;
+              font-style: italic;
+            "
+          >
+            {{ param.description }}
+          </p>
+          <div v-if="param.type === 'size'" class="flex flex-column">
+            <div class="flex flex-row">
+              <span class="flex align-items-center">
+                <div
+                  for="height"
+                  style="margin-right: 5px; width: 50px !important"
+                >
+                  Width:
+                </div>
+                <InputText
+                  id="width"
+                  v-model="param.value.width"
+                  :disabled="param.value.autoWidth"
+                />
+              </span>
+              <div
+                class=""
+                style="
+                  background: #ddd;
+                  width: 1px;
+                  margin-left: 6px;
+                  margin-right: 5px;
+                  opacity: 0.4;
+                "
+              ></div>
+              <div class="flex align-items-center" style="">
+                <Checkbox
+                  v-model="param.value.autoWidth"
+                  :disabled="param.value.autoHeight"
+                  inputId="autoWidth"
+                  :binary="true"
+                />
+                <label for="autoWidth" class="ml-2"> Auto </label>
+              </div>
+            </div>
+            <div
+              class="w-full"
+              style="
+                background: #ddd;
+                height: 1px;
+                margin-top: 6px;
+                margin-bottom: 5px;
+                opacity: 0.4;
+              "
+            ></div>
+            <div class="flex flex-row">
+              <span class="flex align-items-center">
+                <div
+                  for="height"
+                  style="margin-right: 5px; width: 50px !important"
+                >
+                  Height:
+                </div>
+                <InputText
+                  id="height"
+                  v-model="param.value.height"
+                  :disabled="param.value.autoHeight"
+                />
+              </span>
+
+              <div
+                class=""
+                style="
+                  background: #ddd;
+                  width: 1px;
+                  margin-left: 6px;
+                  margin-right: 5px;
+                  opacity: 0.4;
+                "
+              ></div>
+              <div class="flex align-items-center">
+                <Checkbox
+                  v-model="param.value.autoHeight"
+                  :disabled="param.value.autoWidth"
+                  inputId="autoHeight"
+                  :binary="true"
+                />
+                <label for="autoHeight" class="ml-2"> Auto </label>
+              </div>
+            </div>
+          </div>
+          <div v-else-if="param.type === 'combo'" class="flex flex-column">
+            <Dropdown
+              v-model="param.value"
+              :options="param.options"
+              optionLabel="label"
+              optionValue="value"
+            />
+          </div>
+          <div v-else-if="param.type === 'number'" class="flex flex-column">
+            <InputNumber v-model="param.value" inputId="integeronly" />
+          </div>
+          <div v-else-if="param.type === 'file'" class="flex flex-column">
+            <FileUpload
+              :mode="param.options.advanced ? 'advanced' : 'basic'"
+              :accept="param.options.accept"
+              :multiple="param.options.multiple"
+              :invalidFileTypeMessage="param.options.invalidFileTypeMessage"
+              :fileLimit="param.options.fileLimit"
+              :chooseLabel="param.options.label"
+              @select="onSelect($event, param)"
+              @remove="onSelect($event, param)"
+              :showUploadButton="false"
+              :showCancelButton="false"
+            />
+          </div>
+        </div>
+
+        <div
+          v-if="objectType.properties && objectType.properties.animations"
+          style="margin-top: 20px"
+        >
+          Apply to:
+          <Dropdown
+            v-model="applyTo"
+            :options="applyToOptions"
+            optionLabel="label"
+            optionValue="value"
+          />
+        </div>
+
+        <template #footer>
+          <Button
+            label="Cancel"
+            icon="pi pi-times"
+            @click="visible = false"
+            text
+          />
+          <Button
+            label="Execute"
+            icon="pi pi-check"
+            @click="executeAction"
+            :loading="loadingAction"
+            autofocus
+          />
+        </template>
+      </Dialog>
       <Dropdown
         v-model="selectedAction"
         editable

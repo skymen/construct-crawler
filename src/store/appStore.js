@@ -18,6 +18,9 @@ export const useAppStore = defineStore("app", {
   state: () => ({
     projectOpened: false,
     loading: false,
+    actionProgress: 0,
+    projectLoadingMessage: "",
+    projectLoadingProgress: 0,
     project: {
       path: "",
       name: "",
@@ -79,6 +82,8 @@ export const useAppStore = defineStore("app", {
 
         if (dir) {
           if (dir.endsWith(".c3p")) {
+            this.projectLoadingMessage = "Opening project file...";
+            this.projectLoadingProgress = 0;
             const zipContent = await fs.readBinaryFile(dir);
             const zipFile = await JSZip.loadAsync(zipContent);
             const folderPath = await path.join(
@@ -116,12 +121,19 @@ export const useAppStore = defineStore("app", {
                   this.logError(error);
                 }
               };
+              let total = Object.keys(zipFile.files).length;
+              let cur = 0;
               zipFile.forEach((relativePath, zipEntry) => {
+                cur++;
+                this.projectLoadingProgress = 0.1 + 0.9 * (cur / total);
                 promises.push(handler(relativePath, zipEntry));
               });
 
               await Promise.all(promises);
             };
+
+            this.projectLoadingMessage = "Extracting project...";
+            this.projectLoadingProgress = 0.1;
 
             await extractZip(zipFile, folderPath);
             this.openPath(folderPath);
@@ -154,6 +166,8 @@ export const useAppStore = defineStore("app", {
     async openPath(projectDir) {
       // open the path, and then call the other action.
       this.log = "";
+      this.projectLoadingMessage = "Loading project...";
+      this.projectLoadingProgress = 0;
       const fsPath = path;
       const c3proj = JSON.parse(
         await fs.readFile(await fsPath.join(projectDir, "project.c3proj"))
@@ -245,9 +259,16 @@ export const useAppStore = defineStore("app", {
         return info;
       };
 
+      let total = 1;
+      let cur = 0;
+
       const addObjectTypesToList = async (folder, path) => {
         this.logLine(`[INFO]: Adding object types in ${path}`);
+        total += folder.items.length;
+        this.projectLoadingMessage = "Loading project...\n" + path;
         for (const item of folder.items) {
+          cur++;
+          this.projectLoadingProgress = cur / total;
           const info = await getObjectTypeInfo(item, path);
           objectTypesByName.set(item, info);
           allObjectTypes.push(info);

@@ -22,6 +22,8 @@ jobs:
           node-version: 16
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
+      - name: Set up environment
+        run: echo "TAURI_PRIVATE_KEY=${{ secrets.TAURI_PRIVATE_KEY }}" >> $GITHUB_ENV
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-20.04'
         run: |
@@ -38,3 +40,4 @@ jobs:
           releaseBody: "See the assets to download this version and install."
           releaseDraft: false
           prerelease: false
+          includeUpdaterJson: true

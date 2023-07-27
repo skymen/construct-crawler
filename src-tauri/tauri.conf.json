@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "construct_crawler",
-    "version": "0.0.2"
+    "version": "0.0.3"
   },
   "tauri": {
     "allowlist": {
@@ -37,9 +37,20 @@
         "fullscreen": false,
         "resizable": true,
         "title": "constructCrawler",
-        "width": 800,
-        "height": 600
+        "width": 1200,
+        "height": 900
       }
-    ]
+    ],
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://releases.myapp.com/{{target}}/{{arch}}/{{current_version}}"
+      ],
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ2RUNBQzlCNjZBNEIwNUUKUldSZXNLUm1tNnpzMXBzSS9ZK0w0ZVgzcm1iSy9sQlZLbGw4VTRmSHNIUHM3VE1aRUE5N21XOEwK",
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

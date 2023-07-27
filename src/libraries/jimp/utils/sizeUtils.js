@@ -8,6 +8,9 @@ export function properSizeFormat(sizeParam) {
   const size = { width: sizeParam.width, height: sizeParam.height };
   if (sizeParam.autoWidth) size.width = "auto";
   if (sizeParam.autoHeight) size.height = "auto";
+
+  if (typeof size.width === "number") size.width.toString();
+  if (typeof size.height === "number") size.height.toString();
   return size;
 }
 
@@ -20,7 +23,9 @@ export function isSizeValid(size) {
 
 export function getSize(sizeParam, img) {
   const size = {};
-  if (sizeParam.width.endsWith("%")) {
+  if (typeof sizeParam.width === "number") {
+    size.width = sizeParam.width;
+  } else if (sizeParam.width.endsWith("%")) {
     size.width = img.bitmap.width * (parseInt(sizeParam.width) / 100);
   } else if (sizeParam.width === "auto") {
     size.width = Jimp.AUTO;
@@ -28,7 +33,9 @@ export function getSize(sizeParam, img) {
     size.width = parseInt(sizeParam.width);
   }
 
-  if (sizeParam.height.endsWith("%")) {
+  if (typeof sizeParam.height === "number") {
+    size.height = sizeParam.height;
+  } else if (sizeParam.height.endsWith("%")) {
     size.height = img.bitmap.height * (parseInt(sizeParam.height) / 100);
   } else if (sizeParam.height === "auto") {
     size.height = Jimp.AUTO;

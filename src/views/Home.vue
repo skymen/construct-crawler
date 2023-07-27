@@ -26,8 +26,17 @@ if (store.$state.projectOpened) {
       >
       <Button class="homeButton" @click="store.openC3File">Open C3 File</Button>
     </div>
-    <div v-else>
-      <ProgressSpinner />
+    <div
+      v-else
+      class="flex flex-column align-items-center justify-content-center"
+    >
+      <ProgressSpinner style="width: 50px; height: 50px; margin: 20px" />
+      <p>{{ store.$state.projectLoadingMessage }}</p>
+      <ProgressBar
+        :value="store.$state.projectLoadingProgress * 100"
+        :showValue="false"
+        style="width: 60vw; height: 3px; margin: 5px"
+      ></ProgressBar>
     </div>
   </div>
 </template>
