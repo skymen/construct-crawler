@@ -5,7 +5,7 @@ on:
       - main
 
 jobs:
-  publish-tauri:
+  publishtauri:
     permissions:
       contents: write
     strategy:
@@ -14,6 +14,9 @@ jobs:
         platform: [macos-latest, ubuntu-20.04, windows-latest]
 
     runs-on: ${{ matrix.platform }}
+
+    outputs:
+      releaseId: ${{ steps.tauri.outputs.releaseId }}
     steps:
       - uses: actions/checkout@v3
       - name: setup node
@@ -64,9 +67,11 @@ jobs:
       - name: Remove all files
         run: |
           git rm -rf .
+      - env:
+          RELEASE_ID: ${{needs.publishtauri.outputs.releaseId}}
       - name: Fetch JSON file
         run: |
-          RELEASE_ID=${{ needs.publish-tauri.outputs.tauri.outputs.releaseId }}
+          echo "$RELEASE_ID"
           curl -o latest.json "https://github.com/skymen/construct-crawler/releases/download/$RELEASE_ID/latest.json"
       - name: Commit and push changes
         run: |
