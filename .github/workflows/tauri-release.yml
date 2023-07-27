@@ -74,9 +74,12 @@ jobs:
           echo "$RELEASE_ID"
           RELEASE_TAG=$(basename $RELEASE_ID)
           echo "$RELEASE_TAG"
-          curl -o latest.json "https://github.com/skymen/construct-crawler/releases/download/$RELEASE_TAG/latest.json"
+          RELEASE_URL="https://github.com/skymen/construct-crawler/releases/download/$RELEASE_TAG/latest.json"
+          echo "$RELEASE_URL"
+          curl -o latest.json "$RELEASE_URL"
+          cat latest.json
       - name: Commit and push changes
         run: |
           git add latest.json
           git commit -m "Update latest.json"
-          git push -u origin update
+          git push -u origin update --force
