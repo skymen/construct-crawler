@@ -22,8 +22,13 @@ jobs:
           node-version: 16
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
-      - name: Set up environment
+      - name: Export variable (unix)
+        if: matrix.platform != 'windows-latest'
         run: echo "TAURI_PRIVATE_KEY=${{ secrets.TAURI_PRIVATE_KEY }}" >> $GITHUB_ENV
+      - name: Export variable (windows)
+        if: matrix.platform == 'windows-latest'
+        run: echo "::set-env name=TAURI_PRIVATE_KEY::${{ secrets.TAURI_PRIVATE_KEY }}"
+        shell: bash
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-20.04'
         run: |
