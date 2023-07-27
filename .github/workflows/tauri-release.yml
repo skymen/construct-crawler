@@ -67,9 +67,9 @@ jobs:
       - name: Remove all files
         run: |
           git rm -rf .
-      - env:
-          RELEASE_ID: ${{needs.publishtauri.outputs.releaseId}}
       - name: Fetch JSON file
+        env:
+          RELEASE_ID: ${{needs.publishtauri.outputs.releaseId}}
         run: |
           echo "$RELEASE_ID"
           curl -o latest.json "https://github.com/skymen/construct-crawler/releases/download/$RELEASE_ID/latest.json"
