@@ -32,12 +32,39 @@ jobs:
       - name: install frontend dependencies
         run: yarn install # change this to npm or pnpm depending on which one you use
       - uses: tauri-apps/tauri-action@v0
+        id: tauri
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: construct-crawler-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
+          tagName: construct-crawler-v__VERSION__ # the action automatically replaces __VERSION__ with the app version
           releaseName: "Construct Crawler v__VERSION__"
           releaseBody: "See the assets to download this version and install."
           releaseDraft: false
           prerelease: false
           includeUpdaterJson: true
+
+  update-json:
+    needs: publish-tauri
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+      - name: Create or checkout branch
+        run: |
+          git checkout "update" || git checkout --orphan "update"
+      - name: Remove all files
+        run: |
+          git rm -rf .
+      - name: Fetch JSON file
+        run: |
+          RELEASE_ID=${{ needs.publish-tauri.outputs.tauri.outputs.releaseId }}
+          curl -o latest.json "https://github.com/skymen/construct-crawler/releases/download/$RELEASE_ID/latest.json"
+      - name: Commit and push changes
+        run: |
+          git add latest.json
+          git commit -m "Update latest.json"
+          git push -u origin update
