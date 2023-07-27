@@ -20,7 +20,7 @@ fn read_png_dimensions(file_path: String) -> tauri::Result<(u32, u32)> {
   Ok((width, height))
 }
 
-#[tauri::command]
+/* #[tauri::command]
 async fn extract_zip(webview: tauri::WebviewMut, zip_path: String, extract_to: String) -> Result<(), String> {
   use std::path::Path;
 use std::fs::File;
@@ -68,7 +68,7 @@ use tauri::Manager;
 }
 
 
-
+ */
 
 fn main() {
     tauri::Builder::default()
