@@ -51,7 +51,7 @@ jobs:
           prerelease: false
           includeUpdaterJson: true
           updaterJsonPreferNsis: true
-          includeDebug: true
+          includeDebug: false
           includeRelease: true
 
   update-json:
