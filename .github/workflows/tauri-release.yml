@@ -76,7 +76,7 @@ jobs:
           echo "$RELEASE_TAG"
           RELEASE_URL="https://github.com/skymen/construct-crawler/releases/download/$RELEASE_TAG/latest.json"
           echo "$RELEASE_URL"
-          curl -o latest.json "$RELEASE_URL"
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github.v3.raw" -o latest.json -L "$RELEASE_URL"
           cat latest.json
       - name: Commit and push changes
         run: |
