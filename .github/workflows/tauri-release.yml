@@ -50,6 +50,9 @@ jobs:
           releaseDraft: false
           prerelease: false
           includeUpdaterJson: true
+          updaterJsonPreferNsis: true
+          includeDebug: true
+          includeRelease: true
 
   update-json:
     runs-on: ubuntu-latest
