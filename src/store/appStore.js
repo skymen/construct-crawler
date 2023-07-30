@@ -338,7 +338,7 @@ export const useAppStore = defineStore("app", {
 
         if (folder.subfolders) {
           for (const subfolder of folder.subfolders) {
-            await addObjectTypesToList(
+            await addFamilyToList(
               subfolder,
               `${path}${path === "" ? "" : "/"}${subfolder.name}`
             );
