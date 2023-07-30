@@ -30,6 +30,19 @@ const routes = [
           },
         ],
       },
+      {
+        path: "/project/families",
+        name: "Families",
+        component: () => import("../views/Families.vue"),
+
+        children: [
+          {
+            path: "/project/families/:family",
+            name: "Family",
+            component: () => import("../views/Family.vue"),
+          },
+        ],
+      },
     ],
   },
 ];

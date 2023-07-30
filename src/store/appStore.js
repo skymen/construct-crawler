@@ -28,10 +28,13 @@ export const useAppStore = defineStore("app", {
         c3proj: {},
         objectTypes: [],
         objectTypesByName: {},
+        families: [],
+        familiesByName: {},
       },
     },
     log: "",
     objectTypeSearch: "",
+    familySearch: "",
   }),
   getters: {},
   actions: {
@@ -265,7 +268,7 @@ export const useAppStore = defineStore("app", {
       const addObjectTypesToList = async (folder, path) => {
         this.logLine(`[INFO]: Adding object types in ${path}`);
         total += folder.items.length;
-        this.projectLoadingMessage = "Loading project...\n" + path;
+        this.projectLoadingMessage = "Loading object types...\n" + path;
         for (const item of folder.items) {
           cur++;
           this.projectLoadingProgress = cur / total;
@@ -284,7 +287,68 @@ export const useAppStore = defineStore("app", {
         }
       };
 
+      this.projectLoadingMessage = "Loading object types...";
+
       await addObjectTypesToList(c3proj.objectTypes, "");
+
+      const familiesByName = new Map();
+      const allFamilies = [];
+
+      const getFamilyInfo = async (name, path) => {
+        const src = await fsPath.join(
+          projectDir,
+          "families",
+          path,
+          `${name}.json`
+        );
+        const info = { name, src };
+        this.logLine(`[INFO]: Getting info for ${name} in ${path}`);
+
+        // check [name].json in "objectTypes" folder in the project directory. The file can be in a subfolder based on path
+        // if it exists, add the properties to info
+
+        if (await fs.exists(src)) {
+          const untouchedJson = await fs.readFile(src);
+          const json = JSON.parse(untouchedJson);
+
+          info.properties = json;
+          info.originalJson = untouchedJson;
+        } else {
+          // log error
+          this.logLine(`[ERROR]: No family file found for ${name} in ${path}`);
+        }
+
+        return info;
+      };
+
+      total = 1;
+      cur = 0;
+
+      const addFamilyToList = async (folder, path) => {
+        this.logLine(`[INFO]: Adding family in ${path}`);
+        total += folder.items.length;
+        this.projectLoadingMessage = "Loading family...\n" + path;
+        for (const item of folder.items) {
+          cur++;
+          this.projectLoadingProgress = cur / total;
+          const info = await getFamilyInfo(item, path);
+          familiesByName.set(item, info);
+          allFamilies.push(info);
+        }
+
+        if (folder.subfolders) {
+          for (const subfolder of folder.subfolders) {
+            await addObjectTypesToList(
+              subfolder,
+              `${path}${path === "" ? "" : "/"}${subfolder.name}`
+            );
+          }
+        }
+      };
+
+      this.projectLoadingMessage = "Loading families...";
+
+      await addFamilyToList(c3proj.families, "");
 
       this.logLine(`[INFO]: Project ${c3proj.name} opened.`);
       await this.maybeDumpLog(fs, path);
@@ -296,6 +360,8 @@ export const useAppStore = defineStore("app", {
           c3proj,
           objectTypes: allObjectTypes,
           objectTypesByName,
+          families: allFamilies,
+          familiesByName,
         },
       };
 

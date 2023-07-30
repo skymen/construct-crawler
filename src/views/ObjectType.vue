@@ -4,13 +4,8 @@ import { useRouter, useRoute } from "vue-router";
 import LocalImage from "../components/LocalImage.vue";
 import { ref, computed } from "vue";
 import actions from "../libraries/jimp/actions";
-import {
-  getImageSize,
-  getImageBitmap,
-  getImageSizeRust,
-} from "../libraries/jimp/utils/sizeUtils";
+import { getImageSizeRust } from "../libraries/jimp/utils/sizeUtils";
 import { applyAction } from "../libraries/jimp/utils/applyAction";
-import { getCurrentInstance } from "vue";
 import { clearUrlMap } from "../libraries/jimp/utils/urlFromFile";
 
 const router = useRouter();
@@ -100,7 +95,7 @@ async function openActionDialog() {
         if (param.type === "size") {
           let imgBitmap;
           if (objectType.properties && objectType.properties.image) {
-            imgBitmap = await getImageSize(imageUrl.value);
+            imgBitmap = await getImageSizeRust(imageUrl.value);
           } else if (
             objectType.properties &&
             objectType.properties.animations

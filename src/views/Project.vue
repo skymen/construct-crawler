@@ -30,11 +30,13 @@ if (!store.$state.projectOpened) {
         /> -->
       </template>
     </Toolbar>
-    <router-view v-slot="{ Component }">
-      <transition name="slide-y" mode="out-in">
-        <component :is="Component" />
-      </transition>
-    </router-view>
+    <div style="height: calc(100vh - 3.9rem) !important">
+      <router-view v-slot="{ Component }">
+        <transition name="slide-y" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
+    </div>
   </div>
 </template>
 
