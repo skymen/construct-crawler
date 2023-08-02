@@ -214,6 +214,7 @@ function onSelect(event, param) {
       <Dialog
         v-model:visible="visible"
         modal
+        :closable="false"
         :draggable="false"
         position="top"
         style="

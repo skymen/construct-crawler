@@ -1,6 +1,7 @@
 <script setup>
 import { useAppStore } from "../store/appStore";
 import { useRouter } from "vue-router";
+import ProjectProgress from "../components/ProjectProgress.vue";
 //import logo from "@/assets/Construct Crawler.png";
 
 const router = useRouter();
@@ -21,23 +22,12 @@ if (store.$state.projectOpened) {
       class="flex align-items-center justify-content-center"
       v-if="!store.$state.loading"
     >
-      <Button class="homeButton" @click="store.openC3Project"
-        >Open C3 Project</Button
-      >
+      <Button class="homeButton" @click="store.openC3Project">
+        Open C3 Project
+      </Button>
       <Button class="homeButton" @click="store.openC3File">Open C3 File</Button>
     </div>
-    <div
-      v-else
-      class="flex flex-column align-items-center justify-content-center"
-    >
-      <ProgressSpinner style="width: 50px; height: 50px; margin: 20px" />
-      <p>{{ store.$state.projectLoadingMessage }}</p>
-      <ProgressBar
-        :value="store.$state.projectLoadingProgress * 100"
-        :showValue="false"
-        style="width: 60vw; height: 3px; margin: 5px"
-      ></ProgressBar>
-    </div>
+    <ProjectProgress v-else />
   </div>
 </template>
 

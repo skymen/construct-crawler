@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.4.0",
+    "@transcend-io/conflux": "^4.0.3",
     "jimp": "^0.22.8",
-    "jszip": "^3.10.1",
     "pinia": "^2.1.4",
     "primeflex": "^3.3.1",
     "primevue": "^3.30.2",

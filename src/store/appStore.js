@@ -1,10 +1,10 @@
 import { defineStore } from "pinia";
-import JSZip from "jszip";
-import { open } from "@tauri-apps/api/dialog";
+import { open, save } from "@tauri-apps/api/dialog";
 import fs from "../libraries/tauriFsProvider.js";
-import { BaseDirectory } from "@tauri-apps/api/fs";
 import * as path from "@tauri-apps/api/path";
 import { router } from "../plugins/router.js";
+import { appWindow } from "@tauri-apps/api/window";
+import { invoke } from "@tauri-apps/api/tauri";
 
 function nanoId() {
   return Math.random().toString(36).substring(2, 15);
@@ -38,8 +38,65 @@ export const useAppStore = defineStore("app", {
   }),
   getters: {},
   actions: {
+    async clearProject() {
+      this.projectOpened = false;
+      this.loading = false;
+      this.objectTypeSearch = "";
+      this.familySearch = "";
+      this.log = "";
+      this.project = {
+        path: "",
+        name: "",
+        projectData: {
+          c3proj: {},
+          objectTypes: [],
+          objectTypesByName: {},
+          families: [],
+          familiesByName: {},
+        },
+      };
+      await router.push({ path: "/" });
+    },
+    async saveToFile() {
+      // open save dialog with the project name and the extension c3p
+      // then compress the project folder to a zip file and save it to the selected path
+
+      const dir = await save({
+        filters: [
+          {
+            name: "Construct 3 Project",
+            extensions: ["c3p"],
+          },
+        ],
+      });
+
+      if (dir) {
+        this.loading = true;
+        this.projectLoadingProgress = 0;
+        this.projectLoadingMessage = "Saving project...";
+        const folderPath = await path.join(
+          await path.appCacheDir(),
+          `construct-crawler-c3p`
+        );
+
+        const unlisten = await appWindow.listen("progress", (event) => {
+          this.projectLoadingProgress = event.payload.progress;
+          this.projectLoadingMessage =
+            "Saving project...\n" + event.payload.filename;
+          if (event.payload.done) {
+            unlisten();
+          }
+        });
+        await invoke("save_zip", {
+          zipPath: dir,
+          dirPath: folderPath,
+        }).catch((e) => {
+          this.logError(e);
+        });
+        this.loading = false;
+      }
+    },
     async openC3Project() {
-      this.loading = true;
       // open folder dialog
       // check if the folder contains a c3proj file
       // if it does, call openPath()
@@ -50,6 +107,7 @@ export const useAppStore = defineStore("app", {
         });
 
         if (dir) {
+          this.loading = true;
           const c3ProjFile = await path.join(dir, "project.c3proj");
           const exists = await fs.exists(c3ProjFile);
           if (exists) {
@@ -67,7 +125,6 @@ export const useAppStore = defineStore("app", {
       }
     },
     async openC3File() {
-      this.loading = true;
       // open file dialog
       // c3p file is just a zip file.
       // Create a temp folder, extract the zip file to it, and then call the other action.
@@ -84,11 +141,10 @@ export const useAppStore = defineStore("app", {
         });
 
         if (dir) {
+          this.loading = true;
           if (dir.endsWith(".c3p")) {
             this.projectLoadingMessage = "Opening project file...";
             this.projectLoadingProgress = 0;
-            const zipContent = await fs.readBinaryFile(dir);
-            const zipFile = await JSZip.loadAsync(zipContent);
             const folderPath = await path.join(
               await path.appCacheDir(),
               `construct-crawler-c3p`
@@ -98,47 +154,25 @@ export const useAppStore = defineStore("app", {
             }
             await fs.createDir(folderPath);
 
-            const seen = new Set();
-
-            const extractZip = async (zipFile, folderPath) => {
-              const promises = [];
-              const handler = async (relativePath, zipEntry) => {
-                const filePath = await path.join(folderPath, relativePath);
-                const fileContent = await zipEntry.async("uint8array");
-
-                const folderName = await path.dirname(filePath);
-                const folderExists = await fs.exists(folderName);
-                if (seen.has(filePath)) return;
-                seen.add(folderName);
-                try {
-                  if (!folderExists) {
-                    await fs.createDir(folderName, { recursive: true });
-                  }
-
-                  if (await fs.exists(filePath)) {
-                    return;
-                  }
-
-                  await fs.writeBinaryFile(filePath, fileContent);
-                } catch (error) {
-                  this.logError(error);
-                }
-              };
-              let total = Object.keys(zipFile.files).length;
-              let cur = 0;
-              zipFile.forEach((relativePath, zipEntry) => {
-                cur++;
-                this.projectLoadingProgress = 0.1 + 0.9 * (cur / total);
-                promises.push(handler(relativePath, zipEntry));
-              });
-
-              await Promise.all(promises);
-            };
-
+            // Extract the zip file
             this.projectLoadingMessage = "Extracting project...";
-            this.projectLoadingProgress = 0.1;
+            // listen to the `progress` event and update UI accordingly
+            const unlisten = await appWindow.listen("progress", (event) => {
+              this.projectLoadingProgress = event.payload.progress;
+              this.projectLoadingMessage =
+                "Extracting project...\n" + event.payload.filename;
+              if (event.payload.done) {
+                unlisten();
+              }
+            });
+            await invoke("extract_zip", {
+              zipPath: dir,
+              destPath: folderPath,
+            }).catch((e) => {
+              this.logError(e);
+            });
 
-            await extractZip(zipFile, folderPath);
+            // Once extraction is complete, open the path
             this.openPath(folderPath);
           } else {
             this.logError("No c3p file selected.");
@@ -271,6 +305,8 @@ export const useAppStore = defineStore("app", {
         this.projectLoadingMessage = "Loading object types...\n" + path;
         for (const item of folder.items) {
           cur++;
+          this.projectLoadingMessage =
+            "Loading object types...\n" + path + "/" + item;
           this.projectLoadingProgress = cur / total;
           const info = await getObjectTypeInfo(item, path);
           objectTypesByName.set(item, info);
@@ -330,6 +366,8 @@ export const useAppStore = defineStore("app", {
         this.projectLoadingMessage = "Loading family...\n" + path;
         for (const item of folder.items) {
           cur++;
+          this.projectLoadingMessage =
+            "Loading family...\n" + path + "/" + item;
           this.projectLoadingProgress = cur / total;
           const info = await getFamilyInfo(item, path);
           familiesByName.set(item, info);
