@@ -20,6 +20,9 @@ function openFamilies() {
   >
     <Button class="btn" @click="openImages"><span>Object Types</span></Button>
     <Button class="btn" @click="openFamilies"><span>Families</span></Button>
+    <Button class="btn close" @click="store.clearProject"
+      ><span>Close Project</span></Button
+    >
   </div>
 </template>
 
@@ -30,5 +33,18 @@ function openFamilies() {
   text-align: center;
   align-items: center;
   justify-content: center;
+}
+
+.close {
+  background-color: #7f3838;
+  color: #ffffff;
+  border-color: black;
+  margin-top: 2rem;
+}
+
+.close:hover {
+  background-color: #ffffff !important;
+  color: #ff0000 !important;
+  border-color: black !important;
 }
 </style>
