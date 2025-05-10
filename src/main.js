@@ -20,6 +20,7 @@ import InputNumber from "primevue/inputnumber";
 import FileUpload from "primevue/fileupload";
 import ProgressBar from "primevue/progressbar";
 import Breadcrumb from "primevue/breadcrumb";
+import Tooltip from 'primevue/tooltip';
 
 const pinia = createPinia();
 const app = createApp(App);
@@ -42,5 +43,6 @@ app.component("InputNumber", InputNumber);
 app.component("FileUpload", FileUpload);
 app.component("ProgressBar", ProgressBar);
 app.component("Breadcrumb", Breadcrumb);
+app.directive('tooltip', Tooltip);
 
 app.mount("#app");

@@ -12,6 +12,10 @@ function openImages() {
 function openFamilies() {
   router.push({ path: "/project/families" });
 }
+
+function openLayouts() {
+  router.push({ path: "/project/layouts" });
+}
 </script>
 
 <template>
@@ -20,9 +24,10 @@ function openFamilies() {
   >
     <Button class="btn" @click="openImages"><span>Object Types</span></Button>
     <Button class="btn" @click="openFamilies"><span>Families</span></Button>
-    <Button class="btn close" @click="store.clearProject"
-      ><span>Close Project</span></Button
-    >
+    <Button class="btn" @click="openLayouts"><span>Layouts</span></Button>
+    <Button class="btn close" @click="store.clearProject">
+      <span>Close Project</span>
+    </Button>
   </div>
 </template>
 
