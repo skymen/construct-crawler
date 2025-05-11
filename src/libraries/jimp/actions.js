@@ -100,4 +100,44 @@ export default [
       },
     ],
   },
+  {
+    name: "Set All To Replica",
+    description: "Set layout instances of selected object types as replicas.",
+    params: [
+      {
+        name: "templateName",
+        label: "Template name",
+        type: "text",
+        default: "main",
+        description: "Name of the template to assign to replicas."
+      }
+    ],
+    function: async (selectedObjectTypes, helpers, params) => {
+      const layouts = helpers.store.project.projectData.layouts || [];
+      const templateName = params.templateName;
+  
+      for (const layout of layouts) {
+        for (const layer of layout.properties?.layers || []) {
+          for (const instance of layer.instances || []) {
+            const isMatch = selectedObjectTypes.some(obj => obj.name === instance.type);
+            if (!isMatch) continue;
+  
+            instance.template = {
+              mode: "replica",
+              sourceTemplateName: templateName,
+              templateName: "",
+              replicaHierarchyInSyncWithTemplate: false,
+              templatePropagateHierarchyChanges: true,
+              replicaIgnoreTemplateHierarchyChanges: false,
+              components: []
+            };
+  
+            helpers.log(`[INFO] Set ${instance.type} in layout "${layout.name}" to replica of "${templateName}"`);
+          }
+        }
+      }
+  
+      helpers.store.markAsDirty();
+    }
+  }
 ];

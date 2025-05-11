@@ -1,54 +1,59 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
+import Home from "../views/Home.vue";
+import Project from "../views/Project.vue";
+import ProjectHome from "../views/ProjectHome.vue";
+import ObjectTypes from "../views/ObjectTypes.vue";
+import ObjectType from "../views/ObjectType.vue";
+import Families from "../views/Families.vue";
+import Family from "../views/Family.vue";
+
+// Import new views
+import Layouts from "../views/Layouts.vue";
+import LayoutDetail from "../views/LayoutDetail.vue";
 
 const routes = [
-  {
-    path: "/",
-    name: "Home",
-    component: () => import("../views/Home.vue"),
-  },
+  { path: "/", name: "Home", component: Home },
   {
     path: "/project",
     name: "Project",
-    component: () => import("../views/Project.vue"),
-    // sub routes
+    component: Project,
     children: [
+      { path: "home", name: "ProjectHome", component: ProjectHome },
       {
-        path: "/project/home",
-        name: "ProjectHome",
-        component: () => import("../views/ProjectHome.vue"),
-      },
-      {
-        path: "/project/object-types",
+        path: "object-types",
         name: "ObjectTypes",
-        component: () => import("../views/ObjectTypes.vue"),
-
+        component: ObjectTypes,
         children: [
-          {
-            path: "/project/object-types/:objectType",
-            name: "ObjectType",
-            component: () => import("../views/ObjectType.vue"),
-          },
+          { path: ":objectType", name: "ObjectType", component: ObjectType },
         ],
       },
       {
-        path: "/project/families",
+        path: "families",
         name: "Families",
-        component: () => import("../views/Families.vue"),
-
+        component: Families,
+        children: [
+          { path: ":family", name: "Family", component: Family },
+        ],
+      },
+      {
+        path: "layouts",
+        name: "Layouts", // Give a name to the parent route for layouts
+        component: Layouts,
         children: [
           {
-            path: "/project/families/:family",
-            name: "Family",
-            component: () => import("../views/Family.vue"),
-          },
-        ],
+            path: ":layoutName", // Using layoutName as param, ensure it's unique or use filePath
+            name: "LayoutDetail",
+            component: LayoutDetail,
+            props: true // Pass route params (layoutName) and query (filePath) as props
+          }
+        ]
       },
     ],
   },
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(), // Recommended for Tauri
   routes,
 });
 

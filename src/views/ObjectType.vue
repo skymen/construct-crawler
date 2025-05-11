@@ -8,6 +8,11 @@ import { getImageSizeRust } from "../libraries/jimp/utils/sizeUtils";
 import { applyAction } from "../libraries/jimp/utils/applyAction";
 import { clearUrlMap } from "../libraries/jimp/utils/urlFromFile";
 
+import Dialog from 'primevue/dialog';
+import Dropdown from 'primevue/dropdown';
+import Button from 'primevue/button';
+import Tooltip from 'primevue/tooltip';
+
 const router = useRouter();
 
 const store = useAppStore();
@@ -193,6 +198,52 @@ async function executeAction() {
 
 function onSelect(event, param) {
   param.value = event.files;
+}
+
+const isLoadingProjectWideAction = ref(false);
+const isProjectWideSetReplicaDialogVisible = ref(false);
+const selectedProjectWideTargetTemplateName = ref(null);
+
+// Computed property for templates suitable for the current object type
+// For now, lists all templates. User needs to pick a C3-compatible one.
+// A more advanced filter would check if template's object_type is the same as objectType.name 
+// or if objectType.name is in the family of the template's object_type.
+const projectTemplatesForObjectTypeDropdown = computed(() => {
+    if (!store.project?.projectData?.projectTemplates) return [];
+    return store.project.projectData.projectTemplates
+        .map(t => ({
+            label: `${t.name} (Type: ${t.object_type}, Layout: ${t.defined_in_layout_name})`,
+            value: t.name, // Store the template name as the value
+        }))
+        .sort((a,b) => a.label.localeCompare(b.label));
+});
+
+const noTemplatesDefinedInProject = computed(() => store.project?.projectData?.projectTemplates?.length === 0);
+
+const projectWideReplicaButtonTooltip = computed(() => {
+  if (noTemplatesDefinedInProject.value) return `No templates defined anywhere in the project. In C3, set an instance's "Template" property to "Yes" and give it a "Template name", then re-open the project.`;
+  return `Set all instances of '${objectTypeName}' in the entire project as replicas of a chosen template.`;
+});
+
+function openProjectWideSetReplicaDialog() {
+    if (store.project.projectData.projectTemplates.length === 0) {
+        store.logError("No templates found in the project. In C3, set an instance's 'Template' property to 'Yes' and give it a 'Template name'. Then re-open project.");
+        // Optionally, you could show an informational message in the UI too
+        return;
+    }
+    selectedProjectWideTargetTemplateName.value = null; // Reset selection
+    isProjectWideSetReplicaDialogVisible.value = true;
+}
+
+async function confirmProjectWideSetReplicas() {
+    if (!objectTypeName || !selectedProjectWideTargetTemplateName.value) {
+        store.logError("Object type name or target template name is missing for project-wide action.");
+        return;
+    }
+    isLoadingProjectWideAction.value = true; // Use a specific loading flag if needed
+    await store.setAllInstancesOfTypeAsReplicasProjectWide(objectTypeName, selectedProjectWideTargetTemplateName.value);
+    isLoadingProjectWideAction.value = false;
+    isProjectWideSetReplicaDialogVisible.value = false;
 }
 </script>
 
@@ -406,6 +457,32 @@ function onSelect(event, param) {
           />
         </template>
       </Dialog>
+      <Dialog header="Set All Instances of Type as Replicas (Project-wide)" v-model:visible="isProjectWideSetReplicaDialogVisible" modal :style="{width: '50vw'}">
+        <p>
+            This will change all instances of <strong>{{ objectTypeName }}</strong> across all layouts in the project
+            (that are not already templates themselves) to become replicas of the selected template.
+        </p>
+        <div class="p-fluid mt-3">
+            <div class="field">
+                <label for="projectWideTargetTemplate" class="mb-2">Choose a template to make selected instances replicas of:</label>
+                <Dropdown id="projectWideTargetTemplate" v-model="selectedProjectWideTargetTemplateName" :options="projectTemplatesForObjectTypeDropdown"
+                          optionLabel="label" optionValue="value" placeholder="Select a Template" filter style="width:100%;" />
+                <small v-if="noTemplatesDefinedInProject && !store.loading" class="p-error mt-1">
+                    No templates defined in this project. In C3, set an instance's 'Template' property to 'Yes' and give it a 'Template name'. Then re-open project here.
+                </small>
+            </div>
+        </div>
+        <template #footer>
+            <Button label="Cancel" icon="pi pi-times" @click="isProjectWideSetReplicaDialogVisible = false" class="p-button-text"/>
+            <Button 
+              label="Confirm & Apply to Project" 
+              icon="pi pi-check" 
+              @click="confirmProjectWideSetReplicas" 
+              :disabled="!selectedProjectWideTargetTemplateName || store.loading || isLoadingProjectWideAction || noTemplatesDefinedInProject" 
+              autofocus 
+            />
+        </template>
+      </Dialog>
       <Dropdown
         v-model="selectedAction"
         editable
@@ -418,6 +495,15 @@ function onSelect(event, param) {
         class="p-button-success"
         style="margin-left: 10px"
         @click="openActionDialog"
+      />
+      <Button
+          label="Set all to Replica"
+          icon="pi pi-globe"
+          class="p-button-warning"
+          style="margin-left: 10px;"
+          @click="openProjectWideSetReplicaDialog"
+          :disabled="!objectType || isLoadingProjectWideAction || noTemplatesDefinedInProject"
+          v-tooltip.bottom="projectWideReplicaButtonTooltip"
       />
     </div>
     <div
