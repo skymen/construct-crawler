@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "notes": "See the assets to download this version and install.",
+  "pub_date": "2025-05-11T19:14:15.269Z",
+  "platforms": {
+    "darwin-aarch64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSZXNLUm1tNnpzMW5ueDl0N3RvcUNzTXFZS255REFRYUJScGxIdGhHQjArczFYSHFlVWhQakk1aFJtcHI3U0VVU3R3aEZzNklXNG4xWk5pRmJJQ1hCUE1abEx2aTBkM0FjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzQ2OTkwNDc4CWZpbGU6Y29uc3RydWN0X2NyYXdsZXIuYXBwLnRhci5nego2cFFOQ3RpQTFtVXRXVzgrWVdvc3JSL2poMllMei91TVQrcUtpZkpHVElOK2JaRDNyNHpWWWJKMDdxaXQ4VEVkWWpqNjB3SmMwVmZCMSswRldhcXdBdz09Cg==",
+      "url": "https://github.com/skymen/construct-crawler/releases/download/construct-crawler-v0.2.0/construct_crawler_aarch64.app.tar.gz"
+    },
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSZXNLUm1tNnpzMW56SUVWaW05bTNaNEw0K25MakxvTGRFeWRTTW1SMDJDWm44VzNvRWk4Y0lEZFhqVXNkam1wMlYrWjRkR0dtaUFuUld0R1hmRk9DOTJGWllvb3lCT3cwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzQ2OTkwODUwCWZpbGU6Y29uc3RydWN0X2NyYXdsZXJfMC4yLjBfeDY0LXNldHVwLm5zaXMuemlwCkxtdW01Zk5ESG91ckJ1NEdET0xiK0s3bEw0VHB2MG92a2lRaTZySW1rYzJLTkhVTysvWUJvNHVFa1o1SzlLc09oeDNVSjVFdzJjSW5vZnN2bnF5NUJRPT0K",
+      "url": "https://github.com/skymen/construct-crawler/releases/download/construct-crawler-v0.2.0/construct_crawler_0.2.0_x64-setup.nsis.zip"
+    }
+  }
+}
